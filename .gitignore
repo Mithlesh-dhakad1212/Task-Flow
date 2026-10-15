@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# builds
+dist/
+dist-seed/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# tests
+coverage/
+
+# env & secrets — only *.example files are committed
+.env
+.env.*
+!.env.example
+
+# misc
+.DS_Store
+*.log
+npm-debug.log*
+.vscode/
+.idea/
