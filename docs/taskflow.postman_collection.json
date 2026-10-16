@@ -65,7 +65,18 @@
             "auth": {
               "type": "noauth"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -101,7 +112,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Alex Morgan\",\n  \"email\": \"alex@example.com\",\n  \"password\": \"Password123!\"\n}",
+              "raw": "{\n  \"name\": \"Postman Tester\",\n  \"email\": \"{{$randomEmail}}\",\n  \"password\": \"Password123!\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -118,6 +129,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));",
                   "if (pm.response.code < 300) {",
                   "  pm.collectionVariables.set('accessToken', pm.response.json().accessToken);",
                   "}"
@@ -172,6 +184,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));",
                   "if (pm.response.code < 300) {",
                   "  pm.collectionVariables.set('accessToken', pm.response.json().accessToken);",
                   "}"
@@ -210,7 +223,18 @@
             "auth": {
               "type": "noauth"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Current user",
@@ -239,7 +263,18 @@
               ],
               "query": []
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -298,7 +333,18 @@
                 }
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Create a project",
@@ -342,6 +388,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));",
                   "if (pm.response.code < 300) {",
                   "  pm.collectionVariables.set('projectId', pm.response.json().id);",
                   "}"
@@ -377,7 +424,18 @@
               ],
               "query": []
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Update a project",
@@ -415,7 +473,18 @@
                 }
               }
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -494,7 +563,18 @@
                 }
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Create a task in one of your projects",
@@ -538,6 +618,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));",
                   "if (pm.response.code < 300) {",
                   "  pm.collectionVariables.set('taskId', pm.response.json().id);",
                   "}"
@@ -573,7 +654,18 @@
               ],
               "query": []
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Update a task (any subset of fields, e.g. just the status)",
@@ -611,7 +703,18 @@
                 }
               }
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -644,7 +747,18 @@
               ],
               "query": []
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -678,7 +792,18 @@
               ],
               "query": []
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Delete a project and all of its tasks",
@@ -707,7 +832,18 @@
               ],
               "query": []
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "End the current session and clear auth cookies",
@@ -739,7 +875,18 @@
             "auth": {
               "type": "noauth"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));"
+                ]
+              }
+            }
+          ]
         }
       ]
     }

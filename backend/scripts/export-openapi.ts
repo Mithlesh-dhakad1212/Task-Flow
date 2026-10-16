@@ -85,9 +85,19 @@ function toPostman(doc: OpenAPIObject) {
           ...(body && { body }),
           ...((path.startsWith('/api/auth') && !path.endsWith('/me')) || path === '/api/health' ? { auth: { type: 'noauth' } } : {}),
         },
-        ...(captures.length && {
-          event: [{ listen: 'test', script: { type: 'text/javascript', exec: ['if (pm.response.code < 300) {', ...captures.map((c) => `  ${c}`), '}'] } }],
-        }),
+        // Every request asserts success, so `newman run` doubles as a full-stack smoke test in CI.
+        event: [
+          {
+            listen: 'test',
+            script: {
+              type: 'text/javascript',
+              exec: [
+                "pm.test('responds successfully', () => pm.expect(pm.response.code).to.be.below(300));",
+                ...(captures.length ? ['if (pm.response.code < 300) {', ...captures.map((c) => `  ${c}`), '}'] : []),
+              ],
+            },
+          },
+        ],
       };
       folders.set(tag, [...(folders.get(tag) ?? []), request]);
     }
@@ -154,6 +164,13 @@ async function main() {
     r.name.startsWith('Log in'),
   );
   if (login?.request.body) login.request.body.raw = JSON.stringify({ email: 'demo@taskflow.dev', password: 'Password123!' }, null, 2);
+  // A random email keeps "register" repeatable (a fixed one would be 409 on the second run).
+  const register = (auth?.item as { name: string; request: { body?: { raw: string } } }[] | undefined)?.find((r) =>
+    r.name.startsWith('Create an account'),
+  );
+  if (register?.request.body) {
+    register.request.body.raw = JSON.stringify({ name: 'Postman Tester', email: '{{$randomEmail}}', password: 'Password123!' }, null, 2);
+  }
   writeFileSync(join(docsDir, 'taskflow.postman_collection.json'), JSON.stringify(collection, null, 2) + '\n');
 
   console.log(`Wrote docs/openapi.json (${Object.keys(doc.paths).length} paths) and docs/taskflow.postman_collection.json`);

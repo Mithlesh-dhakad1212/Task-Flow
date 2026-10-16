@@ -68,7 +68,7 @@ Every line of the TaskFlow brief, mapped to where it is implemented and how it i
 | Git | Meaningful commits + README | ✅ | Conventional commits; `README.md` |
 | Testing | Unit or integration tests for important functionality | ✅ | 40 be-unit + 31 be-e2e + 45 fe = **116 tests** |
 | Docker | Dockerfile, preferably Compose | ✅ | `backend/Dockerfile`, `frontend/Dockerfile` (multi-stage, non-root), `docker-compose.yml` with health checks |
-| CI/CD | GitHub Actions for lint + tests | ✅ | `.github/workflows/ci.yml`: lint, typecheck, build, unit + e2e (Postgres service), frontend tests, Docker image builds |
+| CI/CD | GitHub Actions for lint + tests | ✅ | `.github/workflows/ci.yml`: backend (lint, typecheck, build, unit, e2e on a Postgres service) · frontend (lint, typecheck, tests, build) · full stack (Compose up with health checks + Newman run of the Postman collection). Replayed on a fresh clone and checked with actionlint |
 
 ## 4. Required API capabilities
 

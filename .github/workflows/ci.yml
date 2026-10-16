@@ -66,24 +66,26 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: http://localhost:4000/api
 
-  docker:
-    name: Docker images build
+  e2e-stack:
+    name: Full stack · Docker Compose + API smoke test (Newman)
     runs-on: ubuntu-latest
     needs: [backend, frontend]
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - name: Build API image
-        uses: docker/build-push-action@v6
+      - uses: actions/setup-node@v4
         with:
-          context: backend
-          push: false
-          cache-from: type=gha,scope=api
-          cache-to: type=gha,mode=max,scope=api
-      - name: Build web image
-        uses: docker/build-push-action@v6
-        with:
-          context: frontend
-          push: false
-          cache-from: type=gha,scope=web
-          cache-to: type=gha,mode=max,scope=web
+          node-version: 22
+      - name: Build and start the stack (db → api → web, waits for health checks)
+        run: docker compose up --build --detach --wait --wait-timeout 180
+      - name: Web app serves the login page
+        run: curl --fail --silent --show-error http://localhost:3000/login > /dev/null
+      - name: Swagger docs are served
+        run: curl --fail --silent --show-error http://localhost:4000/api/docs > /dev/null
+      - name: Run the Postman collection against the running API
+        run: npx --yes newman@6 run docs/taskflow.postman_collection.json --bail --reporters cli
+      - name: Container logs
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Tear down
+        if: always()
+        run: docker compose down --volumes

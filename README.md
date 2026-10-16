@@ -177,7 +177,17 @@ docker compose up -d   # or run the API locally
 npx newman run docs/taskflow.postman_collection.json
 ```
 
-CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint, typecheck, build and all three suites. The backend job uses a Postgres service container, and a final job builds both Docker images.
+### Continuous integration
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and pull request:
+
+| Job | What it checks |
+| --- | --- |
+| **Backend** | `npm ci` → Prisma generate → ESLint → `tsc` → build → unit tests → e2e tests against a Postgres 16 service container |
+| **Frontend** | `npm ci` → ESLint → `tsc` → Vitest → production `next build` |
+| **Full stack** (after both pass) | `docker compose up --build --wait` (health-checked db → api → web), checks that the web app and Swagger respond, runs the **Postman collection with Newman** (every request asserts success), prints container logs on failure, tears down |
+
+Before submission, all three jobs were replayed locally on a fresh clone with an empty database, and the workflow was checked with [`actionlint`](https://github.com/rhysd/actionlint).
 
 ---
 
@@ -308,7 +318,7 @@ A summary is below. The line-by-line version with test references is in [docs/RE
 | Hashed passwords, protected routes, server-side authorization | ✅ |
 | Unit + integration tests | ✅ 116 automated tests (+ Postman collection verified with Newman) |
 | Dockerfiles + Docker Compose | ✅ |
-| GitHub Actions (lint + tests) | ✅ Plus typecheck, build and Docker image builds |
+| GitHub Actions (lint + tests) | ✅ Plus typecheck, builds, and a full Docker Compose stack smoke test with Newman |
 | README, API docs (Swagger + OpenAPI + Postman), architecture note | ✅ |
 | *Optional:* drag-and-drop Kanban, pagination & sorting, refresh-token rotation, rate limiting, loading/error/empty states, more tests | ✅ |
 | *Beyond the brief:* dark mode + accents, board grouping, task drawer, command palette, activity chart | ➕ |
