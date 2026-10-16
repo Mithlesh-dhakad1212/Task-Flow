@@ -116,7 +116,8 @@ async function main() {
             priority,
             description: description ?? '',
             dueDate: day(due),
-            completedAt: status === S.DONE ? day(due) : null,
+            // Spread completions over the last two weeks so the activity chart has shape.
+            completedAt: status === S.DONE ? new Date(day(Math.max(due, -13)).getTime() + 15 * 3_600_000) : null,
           })),
         },
       },

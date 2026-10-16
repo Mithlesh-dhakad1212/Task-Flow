@@ -15,9 +15,14 @@ export function isValidTimeZone(tz: string): boolean {
   }
 }
 
+/** The caller's timezone if it is a valid IANA name, otherwise UTC. */
+export function resolveTimeZone(timeZone?: string): string {
+  return timeZone && isValidTimeZone(timeZone) ? timeZone : 'UTC';
+}
+
 /** Returns today's calendar date in `timeZone` as a UTC-midnight Date (how Prisma represents DATE). */
 export function todayInTimeZone(timeZone?: string, now: Date = new Date()): Date {
-  const tz = timeZone && isValidTimeZone(timeZone) ? timeZone : 'UTC';
+  const tz = resolveTimeZone(timeZone);
   // en-CA formats as YYYY-MM-DD
   const ymd = new Intl.DateTimeFormat('en-CA', {
     timeZone: tz,
@@ -36,4 +41,11 @@ export function parseDateOnly(value: string): Date {
 /** Formats a Date coming from a DATE column as YYYY-MM-DD. */
 export function formatDateOnly(value: Date): string {
   return value.toISOString().slice(0, 10);
+}
+
+/** `date` shifted by `days` calendar days (UTC-midnight dates). */
+export function addDays(date: Date, days: number): Date {
+  const d = new Date(date);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d;
 }

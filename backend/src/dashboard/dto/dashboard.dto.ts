@@ -20,6 +20,17 @@ export class DashboardProjectDto {
   @ApiProperty({ type: ProjectStatsDto }) stats: ProjectStatsDto;
 }
 
+export class ActivityPointDto {
+  @ApiProperty({ example: '2026-10-15', description: 'Calendar day in the caller timezone' }) date: string;
+  @ApiProperty({ example: 3, description: 'Tasks completed that day' }) completed: number;
+}
+
+export class OpenByPriorityDto {
+  @ApiProperty({ example: 2 }) HIGH: number;
+  @ApiProperty({ example: 5 }) MEDIUM: number;
+  @ApiProperty({ example: 4 }) LOW: number;
+}
+
 export class DashboardDto {
   @ApiProperty({ type: DashboardTotalsDto }) totals: DashboardTotalsDto;
   @ApiProperty({ type: [DashboardProjectDto], description: 'Most recently active projects' })
@@ -28,4 +39,8 @@ export class DashboardDto {
   upcoming: TaskDto[];
   @ApiProperty({ type: [TaskDto], description: 'Most overdue open tasks' })
   overdue: TaskDto[];
+  @ApiProperty({ type: [ActivityPointDto], description: 'Completions per day for the last 14 days (oldest first)' })
+  activity: ActivityPointDto[];
+  @ApiProperty({ type: OpenByPriorityDto, description: 'Open (not done) tasks by priority' })
+  openByPriority: OpenByPriorityDto;
 }

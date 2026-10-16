@@ -30,6 +30,32 @@ describe('Dashboard (e2e)', () => {
       completionRate: 0,
     });
     expect(res.body.upcoming).toEqual([]);
+    expect(res.body.openByPriority).toEqual({ HIGH: 0, MEDIUM: 0, LOW: 0 });
+    expect(res.body.activity).toHaveLength(14);
+    expect(res.body.activity.every((d: { completed: number }) => d.completed === 0)).toBe(true);
+  });
+
+  it('reports daily completions (caller timezone) and open tasks by priority', async () => {
+    const { agent } = await registerUser(app, 'Activity');
+    const tz = 'Asia/Kolkata';
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(new Date());
+    const projectId = (await agent.post('/api/projects').send({ name: 'Activity' })).body.id;
+
+    const make = (title: string, status: string, priority: string) =>
+      agent.post('/api/tasks').send({ projectId, title, status, priority, dueDate: today }).expect(201);
+    await make('done 1', 'DONE', 'LOW');
+    await make('done 2', 'DONE', 'HIGH');
+    await make('open high', 'TODO', 'HIGH');
+    await make('open med', 'IN_PROGRESS', 'MEDIUM');
+    const reopened = await make('reopened', 'DONE', 'MEDIUM');
+    // Leaving DONE clears completedAt, so it must not count as a completion.
+    await agent.patch(`/api/tasks/${reopened.body.id}`).send({ status: 'TODO' }).expect(200);
+
+    const res = await agent.get('/api/dashboard').set('X-Timezone', tz).expect(200);
+    expect(res.body.activity).toHaveLength(14);
+    expect(res.body.activity.at(-1)).toEqual({ date: today, completed: 2 });
+    expect(res.body.activity.slice(0, -1).every((d: { completed: number }) => d.completed === 0)).toBe(true);
+    expect(res.body.openByPriority).toEqual({ HIGH: 1, MEDIUM: 2, LOW: 0 });
   });
 
   it("aggregates only the caller's data and computes overdue relative to the caller's timezone", async () => {
