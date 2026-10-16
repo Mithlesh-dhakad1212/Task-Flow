@@ -104,19 +104,23 @@ GROUP BY project_id;
 
 Both use the `(project_id, status)` / `(project_id, due_date)` indexes, and the results are merged in memory. The dashboard works the same way: `COUNT`/`GROUP BY` queries run inside one read transaction, so the four headline numbers always agree with each other.
 
-### Example query: completions per day in the user's timezone
+### Completions per day in the user's timezone (and a production bug)
 
-The dashboard's 14-day activity chart has to bucket `completed_at` (a `timestamptz`) by the user's calendar day, not the server's. A task finished at 23:30 in Kolkata belongs to that day even though it is already 18:00 UTC. Prisma's `groupBy` can't express that, so it is one parameterised raw query (the timezone is validated against the IANA database first and bound as a parameter, never interpolated):
+The 14-day activity chart buckets `completed_at` (a `timestamptz`) by the *user's* calendar day. A task finished at 23:30 in Kolkata belongs to that day even though it is 18:00 UTC.
 
-```sql
-SELECT (t.completed_at AT TIME ZONE $tz)::date AS day, COUNT(*)::int AS completed
-FROM tasks t JOIN projects p ON p.id = t.project_id
-WHERE p.user_id = $user AND t.status = 'DONE'
-  AND (t.completed_at AT TIME ZONE $tz)::date BETWEEN $since AND $today
-GROUP BY day ORDER BY day;
+The first version did the bucketing in SQL with `(completed_at AT TIME ZONE $tz)::date`. It passed every test locally, then returned **500 in production**: Chrome reported the timezone as `Asia/Calcutta` (a legacy alias), and the Railway database (PostgreSQL 18 on Debian 13) no longer ships legacy timezone aliases, so Postgres rejected a name Node.js accepts. The local PostgreSQL 16 (Alpine) still had the alias, which hid the problem.
+
+The fix removes the dependency on the database's timezone list. The query fetches only the completion timestamps inside the window, widened by a day on each side to cover any UTC offset (a handful of rows), and Node buckets them with `Intl.DateTimeFormat`, the same timezone logic that already validates the header:
+
+```ts
+const rows = await prisma.task.findMany({
+  where: { project: { userId }, status: 'DONE', completedAt: { gte: since - 1 day, lt: today + 2 days } },
+  select: { completedAt: true },
+});
+// bucket each timestamp into YYYY-MM-DD in the caller's timezone, then zero-fill 14 days
 ```
 
-Days with no completions are filled with zeros in code. Because `completed_at` is cleared when a task leaves DONE, reopened tasks drop out of the chart. An e2e test covers that.
+Regression tests pin `Asia/Calcutta` (unit and e2e), and CI now runs the backend suite against **both PostgreSQL 16 and 18**, so the engine production uses is always tested.
 
 ## 3. Authentication & authorization
 

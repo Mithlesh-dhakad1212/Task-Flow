@@ -56,6 +56,10 @@ describe('Dashboard (e2e)', () => {
     expect(res.body.activity.at(-1)).toEqual({ date: today, completed: 2 });
     expect(res.body.activity.slice(0, -1).every((d: { completed: number }) => d.completed === 0)).toBe(true);
     expect(res.body.openByPriority).toEqual({ HIGH: 1, MEDIUM: 2, LOW: 0 });
+
+    // Legacy alias some browsers still send; must not break the dashboard (regression: 500 on Postgres 18/Debian 13).
+    const legacy = await agent.get('/api/dashboard').set('X-Timezone', 'Asia/Calcutta').expect(200);
+    expect(legacy.body.activity.at(-1)).toEqual({ date: today, completed: 2 });
   });
 
   it("aggregates only the caller's data and computes overdue relative to the caller's timezone", async () => {

@@ -11,14 +11,20 @@ concurrency:
 
 jobs:
   backend:
-    name: Backend · lint, typecheck, unit + e2e tests
+    name: Backend · lint, typecheck, unit + e2e tests (Postgres ${{ matrix.postgres }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 16 = local Docker Compose; 18 (Debian) = what the Railway deployment runs.
+        # Testing both caught a production-only bug (timezone aliases missing on Debian 13).
+        postgres: ['16-alpine', '18']
     defaults:
       run:
         working-directory: backend
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:${{ matrix.postgres }}
         env:
           POSTGRES_USER: taskflow
           POSTGRES_PASSWORD: taskflow

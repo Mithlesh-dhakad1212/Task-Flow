@@ -171,9 +171,9 @@ cd frontend && npm test
 
 | Suite | Tests | Highlights |
 | --- | --- | --- |
-| Backend unit | 40 | refresh-token rotation and reuse detection, timing-safe login, ownership checks, `completedAt` transitions, timezone-aware "today", error envelope |
+| Backend unit | 43 | refresh-token rotation and reuse detection, timing-safe login, ownership checks, `completedAt` transitions, timezone-aware "today", error envelope |
 | Backend e2e | 31 | auth flows, cookie flags, logout revoking tokens, **cross-user isolation (another user's data → 404)**, combined filters + search, overdue logic, pagination, cascade delete, dashboard numbers and daily activity |
-| Frontend | 45 | API client (single-flight refresh, error mapping), board drag-and-drop for each grouping, quick-add, collapse, complete toggle, theme boot script, command palette matching, open-redirect guard, accessible fields |
+| Frontend | 50 | API client (single-flight refresh, error mapping), board drag-and-drop for each grouping, quick-add, collapse, complete toggle, theme boot script, command palette matching, open-redirect guard, accessible fields |
 
 The Postman collection is also run end to end with Newman (17/17 requests pass):
 
@@ -188,7 +188,7 @@ npx newman run docs/taskflow.postman_collection.json
 
 | Job | What it checks |
 | --- | --- |
-| **Backend** | `npm ci` → Prisma generate → ESLint → `tsc` → build → unit tests → e2e tests against a Postgres 16 service container |
+| **Backend** (PostgreSQL 16 and 18) | `npm ci` → Prisma generate → ESLint → `tsc` → build → unit tests → e2e tests against a Postgres service container, once per version |
 | **Frontend** | `npm ci` → ESLint → `tsc` → Vitest → production `next build` |
 | **Full stack** (after both pass) | `docker compose up --build --wait` (health-checked db → api → web), checks that the web app and Swagger respond, runs the **Postman collection with Newman** (every request asserts success), prints container logs on failure, tears down |
 
@@ -321,7 +321,7 @@ A summary is below. The line-by-line version with test references is in [docs/RE
 | REST, status codes, validation, consistent errors, logging | ✅ |
 | PostgreSQL schema, relations, indexes, migrations, seed | ✅ |
 | Hashed passwords, protected routes, server-side authorization | ✅ |
-| Unit + integration tests | ✅ 116 automated tests (+ Postman collection verified with Newman) |
+| Unit + integration tests | ✅ 124 automated tests (+ Postman collection verified with Newman) |
 | Dockerfiles + Docker Compose | ✅ |
 | GitHub Actions (lint + tests) | ✅ Plus typecheck, builds, and a full Docker Compose stack smoke test with Newman |
 | README, API docs (Swagger + OpenAPI + Postman), architecture note | ✅ |

@@ -108,24 +108,38 @@ export class DashboardService {
 
   /**
    * Tasks completed per calendar day (in the caller's timezone) over the last
-   * ACTIVITY_DAYS days. The day bucketing has to happen in SQL with
-   * `AT TIME ZONE`, so this is a parameterised raw query; days with no
-   * completions are filled with zeros in code.
+   * ACTIVITY_DAYS days.
+   *
+   * The day bucketing is done here rather than with SQL `AT TIME ZONE`: the
+   * database's timezone list depends on its OS packages (Debian 13 dropped
+   * legacy aliases such as "Asia/Calcutta", which browsers still report), so
+   * a name Node accepts could make Postgres fail the whole request. The query
+   * only fetches completion timestamps inside the window (widened by a day on
+   * each side to cover any UTC offset), which is a handful of rows.
    */
   async completionActivity(userId: string, today: Date, timeZone: string): Promise<ActivityPointDto[]> {
     const since = addDays(today, -(ACTIVITY_DAYS - 1));
-    const rows = await this.prisma.$queryRaw<{ day: Date; completed: number }[]>`
-      SELECT (t.completed_at AT TIME ZONE ${timeZone})::date AS day, COUNT(*)::int AS completed
-      FROM tasks t
-      JOIN projects p ON p.id = t.project_id
-      WHERE p.user_id = ${userId}::uuid
-        AND t.status = 'DONE'
-        AND t.completed_at IS NOT NULL
-        AND (t.completed_at AT TIME ZONE ${timeZone})::date BETWEEN ${formatDateOnly(since)}::date AND ${formatDateOnly(today)}::date
-      GROUP BY day
-      ORDER BY day`;
+    const rows = await this.prisma.task.findMany({
+      where: {
+        project: { userId },
+        status: TaskStatus.DONE,
+        completedAt: { gte: addDays(since, -1), lt: addDays(today, 2) },
+      },
+      select: { completedAt: true },
+    });
 
-    const byDay = new Map(rows.map((r) => [formatDateOnly(r.day), r.completed]));
+    const dayOf = new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    const byDay = new Map<string, number>();
+    for (const { completedAt } of rows) {
+      if (!completedAt) continue;
+      const day = dayOf.format(completedAt);
+      byDay.set(day, (byDay.get(day) ?? 0) + 1);
+    }
     return Array.from({ length: ACTIVITY_DAYS }, (_, i) => {
       const date = formatDateOnly(addDays(since, i));
       return { date, completed: byDay.get(date) ?? 0 };

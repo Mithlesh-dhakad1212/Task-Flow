@@ -66,7 +66,7 @@ Every line of the TaskFlow brief, mapped to where it is implemented and how it i
 | Authentication | Secure hashing, protected routes, server-side authorization | ✅ | bcrypt (cost 12), JWT + rotating refresh sessions, global guard, owner-scoped queries |
 | Error handling | Consistent error responses, useful logging | ✅ | `AllExceptionsFilter` envelope with `requestId`; per-request access log; 5xx stack traces only in logs |
 | Git | Meaningful commits + README | ✅ | Conventional commits; `README.md` |
-| Testing | Unit or integration tests for important functionality | ✅ | 40 be-unit + 31 be-e2e + 45 fe = **116 tests** |
+| Testing | Unit or integration tests for important functionality | ✅ | 43 be-unit + 31 be-e2e + 50 fe = **124 tests**; backend suite runs on PostgreSQL 16 and 18 |
 | Docker | Dockerfile, preferably Compose | ✅ | `backend/Dockerfile`, `frontend/Dockerfile` (multi-stage, non-root), `docker-compose.yml` with health checks |
 | CI/CD | GitHub Actions for lint + tests | ✅ | `.github/workflows/ci.yml`: backend (lint, typecheck, build, unit, e2e on a Postgres service) · frontend (lint, typecheck, tests, build) · full stack (Compose up with health checks + Newman run of the Postman collection). Replayed on a fresh clone and checked with actionlint |
 
@@ -101,7 +101,7 @@ Every line of the TaskFlow brief, mapped to where it is implemented and how it i
 | Refresh-token rotation / advanced sessions | ✅ | Rotation, reuse detection (revokes the session), multi-tab grace window, immediate logout |
 | Rate limiting and security controls | ✅ | Global + stricter auth throttler, helmet, CORS allowlist, timing-safe login |
 | Deployment to a public host | ❌ | Not deployed (no hosting account in scope). Runs with one `docker compose up --build` |
-| More comprehensive automated tests | ✅ | 116 tests; e2e runs against a real database |
+| More comprehensive automated tests | ✅ | 124 tests; e2e runs against a real database |
 | Thoughtful loading, error and empty states | ✅ | Skeletons, retryable error states, context-specific empty states, optimistic updates with rollback |
 | *Not asked for:* | ➕ | Dark mode + accent themes, ⌘K command palette, keyboard shortcuts, task side drawer with shareable links, completion-activity chart |
 
@@ -122,6 +122,6 @@ Every line of the TaskFlow brief, mapped to where it is implemented and how it i
 
 The brief's review process asks the candidate to explain **one database query, one security decision, and one bug or trade-off**:
 
-- **Query:** per-project progress in two grouped queries instead of N+1, and the timezone-bucketed completion activity (`AT TIME ZONE`). See [ARCHITECTURE §2](ARCHITECTURE.md#example-query-per-project-progress-without-n1).
+- **Query:** per-project progress in two grouped queries instead of N+1. See [ARCHITECTURE §2](ARCHITECTURE.md#example-query-per-project-progress-without-n1).
 - **Security decision:** rotating refresh tokens with reuse detection and session-bound access tokens, so logout takes effect immediately. See [ARCHITECTURE §3](ARCHITECTURE.md#3-authentication--authorization).
-- **Bug / trade-off:** the multi-tab refresh race and its 30-second grace window; overdue depending on the user's timezone; the `"false"` → `true` env pitfall. See [ARCHITECTURE §4–5](ARCHITECTURE.md#4-other-key-decisions).
+- **Bug / trade-off:** a production-only 500 (PostgreSQL 18 on Debian rejected the `Asia/Calcutta` timezone alias), now fixed and covered by testing on Postgres 16 and 18; cookies breaking across two `*.up.railway.app` domains, fixed with a same-origin proxy; the multi-tab refresh race. See [ARCHITECTURE §2 and §4](ARCHITECTURE.md#completions-per-day-in-the-users-timezone-and-a-production-bug).
