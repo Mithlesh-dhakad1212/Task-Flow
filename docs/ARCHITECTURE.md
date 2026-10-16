@@ -15,7 +15,7 @@ flowchart LR
 | --- | --- | --- |
 | Frontend | **Next.js 15 (App Router) + React 19** | Required by the brief. App Router layouts give clean auth/app route groups |
 | Server state | **TanStack Query** | Caching, request deduplication, background refetch, optimistic updates and retries, with no hand-written reducers |
-| Client state | **React Context** (auth only) + **URL search params** (filters) | Only a little state is truly global. Filters in the URL are shareable and survive reloads |
+| Client state | **React Context** (auth, theme, UI overlays) + **URL search params** (filters, open task) | Only a little state is truly global. Anything worth sharing (filters, `?task=` deep links) lives in the URL |
 | Forms | react-hook-form + zod | Uncontrolled inputs (few re-renders). Schemas mirror the API rules for instant feedback |
 | Styling | Tailwind CSS | A consistent design-token scale. Small reusable components in `components/ui` |
 | Backend | **NestJS 11** | Modules, DI and decorators give a clear controller → service → data layering, and guards, pipes and filters for cross-cutting concerns |
@@ -104,6 +104,20 @@ GROUP BY project_id;
 
 Both use the `(project_id, status)` / `(project_id, due_date)` indexes, and the results are merged in memory. The dashboard works the same way: `COUNT`/`GROUP BY` queries run inside one read transaction, so the four headline numbers always agree with each other.
 
+### Example query: completions per day in the user's timezone
+
+The dashboard's 14-day activity chart has to bucket `completed_at` (a `timestamptz`) by the user's calendar day, not the server's. A task finished at 23:30 in Kolkata belongs to that day even though it is already 18:00 UTC. Prisma's `groupBy` can't express that, so it is one parameterised raw query (the timezone is validated against the IANA database first and bound as a parameter, never interpolated):
+
+```sql
+SELECT (t.completed_at AT TIME ZONE $tz)::date AS day, COUNT(*)::int AS completed
+FROM tasks t JOIN projects p ON p.id = t.project_id
+WHERE p.user_id = $user AND t.status = 'DONE'
+  AND (t.completed_at AT TIME ZONE $tz)::date BETWEEN $since AND $today
+GROUP BY day ORDER BY day;
+```
+
+Days with no completions are filled with zeros in code. Because `completed_at` is cleared when a task leaves DONE, reopened tasks drop out of the chart. An e2e test covers that.
+
 ## 3. Authentication & authorization
 
 ```mermaid
@@ -151,13 +165,21 @@ A single `AllExceptionsFilter` turns every error into `{ statusCode, error, mess
 ### 4.3 Overdue depends on the user's "today"
 "Overdue" means *not done and due before today*. Today is not the same everywhere: at 01:00 in Kolkata it is still yesterday in UTC. The browser sends its IANA timezone in `X-Timezone`, the API works out today's date in that zone (falling back to UTC for missing or invalid values), and every overdue calculation uses it. A unit test pins this behaviour at a timezone boundary, and an e2e test exercises it with UTC+14.
 
-### 4.4 Shared app setup for tests
+### 4.4 UI architecture and design system
+- **Design tokens as CSS variables.** The neutral `ink` scale, surfaces and the `brand` accent are RGB triplets on `:root`. Dark mode (`.dark`) redefines the neutrals, and `data-accent` swaps the brand ramp. Tailwind reads them through `rgb(var(--x) / <alpha-value>)`, so one class (`bg-surface`, `text-ink-900`, `bg-brand-500/10`) works in every theme and accent, and components contain no `dark:` duplication for neutrals.
+- **No theme flash.** A tiny inline script in `<head>` applies the stored mode and accent before first paint. The `ThemeProvider` initialises from the same storage, so React never toggles the class after mount.
+- **Validated chart colours.** The status hues (orange / blue / emerald) were run through a palette validator for lightness band, chroma, colour-blind separation and contrast against both light and dark surfaces. A first attempt with slate/sky failed, so the palette changed. Charts are never colour-only: legends with counts and percentages, labelled bars, and sr-only data tables.
+- **One overlay host.** The task drawer, create dialogs and command palette are rendered once in the app shell and opened through a `UIProvider`, so pages, the palette and keyboard shortcuts share one implementation. The open task is just `?task=<id>` in the URL: shareable and survives a refresh.
+- **Board grouping is data-driven.** `buildColumns(groupBy)` returns columns that each carry the *patch* a drop applies (`{status}`, `{priority}` or `{projectId}`). Drag-and-drop, quick-add and tests all go through that one abstraction, and the server still validates ownership when a task changes project.
+
+### 4.5 Shared app setup for tests
 `configureApp()` (prefix, helmet, cookies, CORS, validation pipe, error filter) is used by both `main.ts` and the e2e tests. The integration tests therefore exercise the exact production pipeline against a real Postgres database, not mocks.
 
-### 4.5 Delivery
+### 4.6 Delivery
 - Multi-stage Dockerfiles. The API image runs as a non-root user with `tini`, applies `prisma migrate deploy` on start, and can seed demo data. The web image uses Next.js standalone output.
 - Compose health checks order start-up: db healthy → api healthy (it checks the database) → web.
 - CI runs lint, typecheck, build, unit tests and e2e tests (Postgres service container) for the backend, and lint, typecheck, tests and build for the frontend. It then builds both Docker images.
+- The OpenAPI spec and Postman collection are generated from the code (`npm run openapi:export`), so the API docs can't drift from the implementation.
 
 ## 5. Pitfalls handled along the way
 

@@ -1756,6 +1756,47 @@
           "stats"
         ]
       },
+      "ActivityPointDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-10-15",
+            "description": "Calendar day in the caller timezone"
+          },
+          "completed": {
+            "type": "number",
+            "example": 3,
+            "description": "Tasks completed that day"
+          }
+        },
+        "required": [
+          "date",
+          "completed"
+        ]
+      },
+      "OpenByPriorityDto": {
+        "type": "object",
+        "properties": {
+          "HIGH": {
+            "type": "number",
+            "example": 2
+          },
+          "MEDIUM": {
+            "type": "number",
+            "example": 5
+          },
+          "LOW": {
+            "type": "number",
+            "example": 4
+          }
+        },
+        "required": [
+          "HIGH",
+          "MEDIUM",
+          "LOW"
+        ]
+      },
       "DashboardDto": {
         "type": "object",
         "properties": {
@@ -1782,13 +1823,30 @@
             "items": {
               "$ref": "#/components/schemas/TaskDto"
             }
+          },
+          "activity": {
+            "description": "Completions per day for the last 14 days (oldest first)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityPointDto"
+            }
+          },
+          "openByPriority": {
+            "description": "Open (not done) tasks by priority",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OpenByPriorityDto"
+              }
+            ]
           }
         },
         "required": [
           "totals",
           "projects",
           "upcoming",
-          "overdue"
+          "overdue",
+          "activity",
+          "openByPriority"
         ]
       }
     }
