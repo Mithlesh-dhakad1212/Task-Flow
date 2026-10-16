@@ -127,6 +127,8 @@ Secrets are never committed. Only `*.example` files are tracked.
 | `REFRESH_TOKEN_TTL_DAYS` | `7` | Session / refresh-token lifetime |
 | `BCRYPT_ROUNDS` | `12` | Password hashing cost |
 | `PORT` | `4000` | HTTP port |
+| `HOST` | `0.0.0.0` | Bind address; `::` also accepts IPv6 (Railway private networking) |
+| `TRUST_PROXY` | `1` | Number of reverse proxies in front of the API (used to find the client IP for rate limiting) |
 | `CORS_ORIGINS` | `http://localhost:3000` | Comma-separated origins allowed to call the API with credentials |
 | `COOKIE_SECURE` | `false` | Set to `true` when served over HTTPS |
 | `RATE_LIMIT_GLOBAL` | `300` | Requests per minute per IP, all routes |
@@ -139,7 +141,10 @@ The API validates its environment at boot and refuses to start with a missing or
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:4000/api` | Public API base URL (built into the browser bundle at build time) |
+| `NEXT_PUBLIC_API_URL` | `/api` | Where the browser sends API calls. Keep `/api`: the web app's same-origin proxy (build time) |
+| `API_PROXY_TARGET` | `http://localhost:4000` | Where that proxy forwards `/api/*`, read at **runtime** (server-side only) |
+
+The browser never calls the API host directly. Requests go to the web app's own `/api/*` route ([`src/app/api/[...path]/route.ts`](frontend/src/app/api/[...path]/route.ts)), which forwards them to `API_PROXY_TARGET`. Session cookies are therefore first-party even when the web app and API are deployed on different domains, and no CORS setup is needed.
 
 ### Docker Compose (optional `.env` at the repo root)
 
@@ -324,9 +329,22 @@ A summary is below. The line-by-line version with test references is in [docs/RE
 | *Beyond the brief:* dark mode + accents, board grouping, task drawer, command palette, activity chart | ➕ |
 | *Optional:* public deployment | ❌ Not deployed. Runs locally with one `docker compose up` |
 
+## Deploying (e.g. Railway)
+
+Deploy three services from this repo: PostgreSQL, the API (`backend/Dockerfile`) and the web app (`frontend/Dockerfile`).
+
+| Service | Variables |
+| --- | --- |
+| **API** | `DATABASE_URL` (reference the Postgres service), `JWT_ACCESS_SECRET` (new random value), `NODE_ENV=production`, `COOKIE_SECURE=true`, `HOST=::`, `SEED_DEMO=true` (optional demo data) |
+| **Web** | `API_PROXY_TARGET=http://<api-service>.railway.internal:<api PORT>` (private network), or the API's public `https://…up.railway.app` URL with `TRUST_PROXY=2` set on the API. Leave `NEXT_PUBLIC_API_URL` unset (defaults to `/api`) |
+
+Open the **web** service's URL. Migrations run automatically when the API container starts.
+
+> Why the proxy matters: `*.up.railway.app` is on the Public Suffix List, so two Railway services count as *different sites*. If the browser called the API's domain directly, its session cookies would be third-party: not sent with `SameSite=Lax` and blocked by many browsers even with `SameSite=None`. Login would succeed and every request after it would return 401.
+
 ## Known limitations & trade-offs
 
-- **Not deployed publicly.** The stack is containerized and ready for any Docker host. For a cross-site deployment (web and API on different registrable domains), cookies would need `SameSite=None; Secure` and a CSRF token. Today's same-site setup relies on `SameSite=Lax`, a CORS allowlist and JSON-only endpoints.
+- **CSRF:** the browser only talks to the web app's origin (same-origin proxy), so session cookies stay `SameSite=Lax` and first-party; together with JSON-only endpoints this mitigates CSRF without a separate token.
 - **The client-side route guard is a UX feature, not a security boundary.** The session cookies belong to the API origin, so Next.js middleware cannot reliably read them. Every request is still authorized by the API.
 - **Rate limiting is in-memory per instance.** Running several API replicas would need a shared store such as Redis.
 - **Theme and accent are per-browser preferences** (localStorage), not stored on the user account.

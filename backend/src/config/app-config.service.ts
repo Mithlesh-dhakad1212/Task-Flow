@@ -19,6 +19,14 @@ export class AppConfigService {
     return this.config.get('PORT', { infer: true });
   }
 
+  get host() {
+    return this.config.get('HOST', { infer: true });
+  }
+
+  get trustProxy() {
+    return this.config.get('TRUST_PROXY', { infer: true });
+  }
+
   get corsOrigins(): string[] {
     return this.config
       .get('CORS_ORIGINS', { infer: true })

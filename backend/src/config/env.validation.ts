@@ -27,6 +27,17 @@ export class EnvironmentVariables {
   @Max(65535)
   PORT = 4000;
 
+  /** Bind address. Use "::" to accept IPv6 too (e.g. Railway private networking). */
+  @IsString()
+  HOST = '0.0.0.0';
+
+  /** Number of reverse proxies in front of the API, used to derive the client IP. */
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(5)
+  TRUST_PROXY = 1;
+
   @IsString()
   CORS_ORIGINS = 'http://localhost:3000';
 

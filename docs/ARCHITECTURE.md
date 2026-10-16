@@ -156,26 +156,31 @@ sequenceDiagram
 ### 4.1 Consistent errors and observability
 A single `AllExceptionsFilter` turns every error into `{ statusCode, error, message, details?, path, timestamp, requestId }`. Validation errors list each invalid field. Prisma's unique-violation and not-found errors map to 409 and 404. Anything unexpected becomes a generic 500, and only the server log keeps the stack trace. A middleware assigns each request an id (or accepts a well-formed `X-Request-Id`), echoes it in the response header, and writes one access-log line per request with status and duration.
 
-### 4.2 Frontend data flow
+### 4.2 Same-origin API proxy
+The browser never calls the API host directly. `frontend/src/app/api/[...path]/route.ts` forwards `/api/*` to `API_PROXY_TARGET`, which is read at runtime: `http://api:4000` in Compose, a private-network URL in production. It passes cookies, the client IP and every `Set-Cookie` through.
+
+This came from a real deployment bug. On Railway the web app and API got two `*.up.railway.app` domains, and that suffix is on the Public Suffix List, so they are *different sites*. Login returned 200, but the browser treated the API's cookies as third-party and never sent them back, so every request after it was a 401. `SameSite=None` would have weakened CSRF protection and still fails in browsers that block third-party cookies. The proxy makes the cookies first-party, removes CORS from the picture and keeps `SameSite=Lax`.
+
+### 4.3 Frontend data flow
 - One `api()` wrapper handles credentials, JSON, the `X-Timezone` header and error mapping. On a 401 it runs a **single-flight refresh**: ten requests that fail together share one refresh call, then retry.
 - Query keys are hierarchical (`['tasks', 'list', params]`), so a task mutation can invalidate *all* task lists, project stats and the dashboard in one call.
 - Status changes are **optimistic**: the card moves immediately, the cache snapshot is restored on error, and the server's version is refetched afterwards.
 - Mutation errors surface through one global `MutationCache.onError` toast. Forms additionally map `details[]` onto their fields.
 
-### 4.3 Overdue depends on the user's "today"
+### 4.4 Overdue depends on the user's "today"
 "Overdue" means *not done and due before today*. Today is not the same everywhere: at 01:00 in Kolkata it is still yesterday in UTC. The browser sends its IANA timezone in `X-Timezone`, the API works out today's date in that zone (falling back to UTC for missing or invalid values), and every overdue calculation uses it. A unit test pins this behaviour at a timezone boundary, and an e2e test exercises it with UTC+14.
 
-### 4.4 UI architecture and design system
+### 4.5 UI architecture and design system
 - **Design tokens as CSS variables.** The neutral `ink` scale, surfaces and the `brand` accent are RGB triplets on `:root`. Dark mode (`.dark`) redefines the neutrals, and `data-accent` swaps the brand ramp. Tailwind reads them through `rgb(var(--x) / <alpha-value>)`, so one class (`bg-surface`, `text-ink-900`, `bg-brand-500/10`) works in every theme and accent, and components contain no `dark:` duplication for neutrals.
 - **No theme flash.** A tiny inline script in `<head>` applies the stored mode and accent before first paint. The `ThemeProvider` initialises from the same storage, so React never toggles the class after mount.
 - **Validated chart colours.** The status hues (orange / blue / emerald) were run through a palette validator for lightness band, chroma, colour-blind separation and contrast against both light and dark surfaces. A first attempt with slate/sky failed, so the palette changed. Charts are never colour-only: legends with counts and percentages, labelled bars, and sr-only data tables.
 - **One overlay host.** The task drawer, create dialogs and command palette are rendered once in the app shell and opened through a `UIProvider`, so pages, the palette and keyboard shortcuts share one implementation. The open task is just `?task=<id>` in the URL: shareable and survives a refresh.
 - **Board grouping is data-driven.** `buildColumns(groupBy)` returns columns that each carry the *patch* a drop applies (`{status}`, `{priority}` or `{projectId}`). Drag-and-drop, quick-add and tests all go through that one abstraction, and the server still validates ownership when a task changes project.
 
-### 4.5 Shared app setup for tests
+### 4.6 Shared app setup for tests
 `configureApp()` (prefix, helmet, cookies, CORS, validation pipe, error filter) is used by both `main.ts` and the e2e tests. The integration tests therefore exercise the exact production pipeline against a real Postgres database, not mocks.
 
-### 4.6 Delivery
+### 4.7 Delivery
 - Multi-stage Dockerfiles. The API image runs as a non-root user with `tini`, applies `prisma migrate deploy` on start, and can seed demo data. The web image uses Next.js standalone output.
 - Compose health checks order start-up: db healthy → api healthy (it checks the database) → web.
 - CI runs lint, typecheck, build, unit tests and e2e tests (Postgres service container) for the backend, and lint, typecheck, tests and build for the frontend. It then builds both Docker images.

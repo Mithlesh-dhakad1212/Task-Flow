@@ -1,4 +1,9 @@
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api').replace(/\/$/, '');
+/**
+ * Defaults to the same-origin proxy (`/api`, see app/api/[...path]/route.ts) so
+ * session cookies are first-party in every deployment. Set NEXT_PUBLIC_API_URL
+ * to an absolute URL only to bypass the proxy.
+ */
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL || '/api').replace(/\/$/, '');
 
 export interface FieldError {
   field: string;

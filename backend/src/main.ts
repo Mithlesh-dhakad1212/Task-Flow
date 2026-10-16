@@ -9,12 +9,13 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: false });
   const config = app.get(AppConfigService);
 
-  // Behind a reverse proxy (Docker/hosting), trust X-Forwarded-* for req.ip and rate limiting.
-  app.set('trust proxy', 1);
+  // Behind reverse proxies (hosting edge, the web app's /api proxy) trust X-Forwarded-*
+  // for req.ip, which the rate limiter keys on. TRUST_PROXY = number of hops.
+  app.set('trust proxy', config.trustProxy);
   configureApp(app);
   setupSwagger(app);
 
-  await app.listen(config.port, '0.0.0.0');
+  await app.listen(config.port, config.host);
   const logger = new Logger('Bootstrap');
   logger.log(`TaskFlow API listening on http://localhost:${config.port}/${API_PREFIX}`);
   logger.log(`Swagger docs at http://localhost:${config.port}/${API_PREFIX}/docs`);
