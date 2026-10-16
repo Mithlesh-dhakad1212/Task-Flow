@@ -51,6 +51,8 @@ On start-up the API container applies database migrations and seeds a demo works
 
 You can also register a fresh account. To turn off seeding, set `SEED_DEMO=false`. Run `docker compose down -v` to stop everything and wipe the database.
 
+> **"Bind for 0.0.0.0:5433 failed: port is already allocated"?** Another process or container is using port 5433. Pick a different host port with `DB_PORT=5544 docker compose up --build`. The app containers talk to the database over the internal Docker network, so they are unaffected. Ports 3000 and 4000 must also be free.
+
 ---
 
 ## Local development
@@ -126,7 +128,7 @@ The API validates its environment at boot and refuses to start with a missing or
 
 ### Docker Compose (optional `.env` at the repo root)
 
-See [`.env.example`](.env.example): `POSTGRES_*`, `JWT_ACCESS_SECRET` and `SEED_DEMO`. The Compose file has local-only defaults so it works with no setup.
+See [`.env.example`](.env.example): `POSTGRES_*`, `DB_PORT`, `JWT_ACCESS_SECRET` and `SEED_DEMO`. The Compose file has local-only defaults so it works with no setup.
 
 ---
 

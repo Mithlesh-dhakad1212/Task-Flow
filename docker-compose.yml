@@ -1,7 +1,7 @@
 # One-command local stack:  docker compose up --build
 #   Web  → http://localhost:3000   (demo: demo@taskflow.dev / Password123!)
 #   API  → http://localhost:4000/api   Swagger → http://localhost:4000/api/docs
-#   DB   → localhost:5433 (taskflow / taskflow)
+#   DB   → localhost:5433 (taskflow / taskflow) — change with DB_PORT if 5433 is taken
 #
 # Secrets below are local-development defaults only. Override them with a
 # `.env` file next to this one (see .env.example) for anything shared.
@@ -17,7 +17,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-taskflow}
       POSTGRES_DB: ${POSTGRES_DB:-taskflow}
     ports:
-      - '5433:5432'
+      # Host port is configurable in case 5433 is already in use (e.g. DB_PORT=5544).
+      - '${DB_PORT:-5433}:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
