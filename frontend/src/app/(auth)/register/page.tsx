@@ -47,7 +47,7 @@ export default function RegisterPage() {
 
       <form onSubmit={onSubmit} noValidate className="mt-8 space-y-4">
         {formError && (
-          <div role="alert" className="rounded-lg bg-rose-50 px-3 py-2.5 text-sm font-medium text-rose-700">
+          <div role="alert" className="rounded-lg bg-rose-500/10 px-3 py-2.5 text-sm font-medium text-rose-700 dark:text-rose-300">
             {formError}
           </div>
         )}
@@ -74,7 +74,7 @@ export default function RegisterPage() {
 
       <p className="mt-6 text-center text-sm text-ink-500">
         Already have an account?{' '}
-        <Link href="/login" className="font-semibold text-brand-600 hover:text-brand-700">
+        <Link href="/login" className="font-semibold text-brand-600 hover:text-brand-700 dark:hover:text-brand-300">
           Sign in
         </Link>
       </p>

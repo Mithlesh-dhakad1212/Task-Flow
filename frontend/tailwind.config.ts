@@ -1,6 +1,12 @@
 import type { Config } from 'tailwindcss';
 
+/** Colour backed by a CSS variable holding an "R G B" triplet (supports /opacity). */
+const v = (name: string) => `rgb(var(--${name}) / <alpha-value>)`;
+const scale = (prefix: string, steps: number[]) =>
+  Object.fromEntries(steps.map((s) => [s, v(`${prefix}-${s}`)]));
+
 const config: Config = {
+  darkMode: 'class',
   content: ['./src/**/*.{ts,tsx}'],
   theme: {
     extend: {
@@ -8,35 +14,16 @@ const config: Config = {
         sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
-        brand: {
-          50: '#eff5ff',
-          100: '#dbe8fe',
-          200: '#bfd7fe',
-          300: '#93bbfd',
-          400: '#6095fa',
-          500: '#3b72f6',
-          600: '#2563eb',
-          700: '#1d4fd8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-        },
-        ink: {
-          50: '#f6f8fb',
-          100: '#eef1f6',
-          200: '#e2e7ef',
-          300: '#cbd3df',
-          400: '#94a0b4',
-          500: '#64708a',
-          600: '#4a5568',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f1b2d',
-          950: '#0b1424',
-        },
+        brand: scale('brand', [50, 100, 200, 300, 400, 500, 600, 700, 800, 900]),
+        ink: scale('ink', [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]),
+        surface: v('surface'),
+        canvas: v('canvas'),
+        elevated: v('elevated'),
       },
       boxShadow: {
-        card: '0 1px 2px 0 rgb(15 27 45 / 0.04), 0 1px 3px 0 rgb(15 27 45 / 0.06)',
-        lift: '0 8px 24px -6px rgb(15 27 45 / 0.16)',
+        card: '0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06)',
+        lift: '0 12px 32px -8px rgb(15 23 42 / 0.22)',
+        glow: '0 8px 24px -6px rgb(var(--brand-500) / 0.45)',
       },
       keyframes: {
         'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },
@@ -45,11 +32,15 @@ const config: Config = {
           to: { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
         'slide-in': { from: { transform: 'translateX(-100%)' }, to: { transform: 'translateX(0)' } },
+        'slide-in-right': { from: { transform: 'translateX(100%)' }, to: { transform: 'translateX(0)' } },
+        pop: { '0%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.25)' }, '100%': { transform: 'scale(1)' } },
       },
       animation: {
         'fade-in': 'fade-in 150ms ease-out',
         'scale-in': 'scale-in 180ms cubic-bezier(0.16, 1, 0.3, 1)',
         'slide-in': 'slide-in 200ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'slide-in-right': 'slide-in-right 240ms cubic-bezier(0.16, 1, 0.3, 1)',
+        pop: 'pop 250ms ease-out',
       },
     },
   },

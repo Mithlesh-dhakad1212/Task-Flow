@@ -2,22 +2,145 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Design tokens ──────────────────────────────────────────────────────
+   Neutral "ink" scale + surfaces flip in dark mode; "brand" is the accent
+   chosen by the user (data-accent on <html>). Values are RGB triplets so
+   Tailwind opacity modifiers (bg-brand-500/10) keep working. */
+@layer base {
+  :root {
+    --ink-50: 248 250 252;
+    --ink-100: 241 245 249;
+    --ink-200: 226 232 240;
+    --ink-300: 203 213 225;
+    --ink-400: 148 163 184;
+    --ink-500: 100 116 139;
+    --ink-600: 71 85 105;
+    --ink-700: 51 65 85;
+    --ink-800: 30 41 59;
+    --ink-900: 15 23 42;
+    --ink-950: 2 6 23;
+    --surface: 255 255 255;
+    --canvas: 246 247 251;
+    --elevated: 255 255 255;
+    --brand-50: 245 243 255;
+    --brand-100: 237 233 254;
+    --brand-200: 221 214 254;
+    --brand-300: 196 181 253;
+    --brand-400: 167 139 250;
+    --brand-500: 139 92 246;
+    --brand-600: 124 58 237;
+    --brand-700: 109 40 217;
+    --brand-800: 91 33 182;
+    --brand-900: 76 29 149;
+  }
+  .dark {
+    --ink-50: 35 38 58;
+    --ink-100: 42 45 66;
+    --ink-200: 54 58 82;
+    --ink-300: 75 80 112;
+    --ink-400: 111 117 148;
+    --ink-500: 149 155 182;
+    --ink-600: 180 185 207;
+    --ink-700: 207 211 226;
+    --ink-800: 228 230 239;
+    --ink-900: 243 244 248;
+    --ink-950: 250 250 252;
+    --surface: 26 28 43;
+    --canvas: 17 18 28;
+    --elevated: 33 36 58;
+  }
+  [data-accent='violet'] {
+    --brand-50: 245 243 255;
+    --brand-100: 237 233 254;
+    --brand-200: 221 214 254;
+    --brand-300: 196 181 253;
+    --brand-400: 167 139 250;
+    --brand-500: 139 92 246;
+    --brand-600: 124 58 237;
+    --brand-700: 109 40 217;
+    --brand-800: 91 33 182;
+    --brand-900: 76 29 149;
+  }
+  [data-accent='blue'] {
+    --brand-50: 239 246 255;
+    --brand-100: 219 234 254;
+    --brand-200: 191 219 254;
+    --brand-300: 147 197 253;
+    --brand-400: 96 165 250;
+    --brand-500: 59 130 246;
+    --brand-600: 37 99 235;
+    --brand-700: 29 78 216;
+    --brand-800: 30 64 175;
+    --brand-900: 30 58 138;
+  }
+  [data-accent='emerald'] {
+    --brand-50: 236 253 245;
+    --brand-100: 209 250 229;
+    --brand-200: 167 243 208;
+    --brand-300: 110 231 183;
+    --brand-400: 52 211 153;
+    --brand-500: 16 185 129;
+    --brand-600: 4 120 87;
+    --brand-700: 6 95 70;
+    --brand-800: 6 78 59;
+    --brand-900: 2 44 34;
+  }
+  [data-accent='rose'] {
+    --brand-50: 255 241 242;
+    --brand-100: 255 228 230;
+    --brand-200: 254 205 211;
+    --brand-300: 253 164 175;
+    --brand-400: 251 113 133;
+    --brand-500: 244 63 94;
+    --brand-600: 225 29 72;
+    --brand-700: 190 18 60;
+    --brand-800: 159 18 57;
+    --brand-900: 136 19 55;
+  }
+  [data-accent='amber'] {
+    --brand-50: 255 251 235;
+    --brand-100: 254 243 199;
+    --brand-200: 253 230 138;
+    --brand-300: 252 211 77;
+    --brand-400: 251 191 36;
+    --brand-500: 245 158 11;
+    --brand-600: 180 83 9;
+    --brand-700: 146 64 14;
+    --brand-800: 120 53 15;
+    --brand-900: 69 26 3;
+  }
+}
+
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
   }
   body {
-    @apply bg-ink-50 text-ink-900 antialiased;
+    @apply bg-canvas text-ink-900 antialiased;
   }
   :focus-visible {
-    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-white;
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-surface;
+  }
+  ::selection {
+    @apply bg-brand-500/25;
   }
 }
 
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: theme('colors.ink.300') transparent;
+    scrollbar-color: rgb(var(--ink-300)) transparent;
+  }
+  /* Brand gradient used for hero areas and the logo mark. */
+  .bg-brand-gradient {
+    background-image: linear-gradient(135deg, rgb(var(--brand-500)) 0%, rgb(var(--brand-700)) 55%, rgb(var(--brand-900)) 100%);
+  }
+  .text-balance {
+    text-wrap: balance;
   }
 }
 

@@ -20,11 +20,11 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center rounded-xl border border-dashed border-ink-300 bg-white/60 px-6 py-14 text-center',
+        'flex flex-col items-center justify-center rounded-xl border border-dashed border-ink-300 bg-surface/60 px-6 py-14 text-center',
         className,
       )}
     >
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/10 text-brand-600">
         <Icon className="h-6 w-6" aria-hidden />
       </div>
       <h3 className="text-sm font-semibold text-ink-900">{title}</h3>
@@ -39,7 +39,7 @@ export function ErrorState({ error, onRetry, className }: { error: unknown; onRe
     <div
       role="alert"
       className={cn(
-        'flex flex-col items-center justify-center rounded-xl border border-rose-200 bg-rose-50/60 px-6 py-12 text-center',
+        'flex flex-col items-center justify-center rounded-xl border border-rose-500/30 bg-rose-500/5 px-6 py-12 text-center',
         className,
       )}
     >

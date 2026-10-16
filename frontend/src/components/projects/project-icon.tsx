@@ -8,8 +8,8 @@ export function ProjectIcon({ color, size = 'md' }: { color: ProjectColor; size?
   return (
     <span
       className={cn(
-        'flex shrink-0 items-center justify-center rounded-lg text-white shadow-sm',
-        c.swatch,
+        'flex shrink-0 items-center justify-center rounded-lg bg-gradient-to-br text-white shadow-sm',
+        c.gradient,
         { sm: 'h-7 w-7', md: 'h-9 w-9', lg: 'h-12 w-12 rounded-xl' }[size],
       )}
       aria-hidden

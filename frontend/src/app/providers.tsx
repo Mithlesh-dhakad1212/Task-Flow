@@ -4,6 +4,7 @@ import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react
 import { useState, type ReactNode } from 'react';
 import { Toaster, toast } from 'sonner';
 import { AuthProvider } from '@/context/auth-context';
+import { ThemeProvider, useTheme } from '@/context/theme-context';
 import { ApiError, errorMessage } from '@/lib/api/client';
 
 function makeQueryClient() {
@@ -31,9 +32,16 @@ function makeQueryClient() {
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(makeQueryClient);
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>{children}</AuthProvider>
-      <Toaster position="bottom-right" richColors closeButton />
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>{children}</AuthProvider>
+        <ThemedToaster />
+      </QueryClientProvider>
+    </ThemeProvider>
   );
+}
+
+function ThemedToaster() {
+  const { isDark } = useTheme();
+  return <Toaster position="bottom-right" richColors closeButton theme={isDark ? 'dark' : 'light'} />;
 }

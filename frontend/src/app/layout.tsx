@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { type ReactNode } from 'react';
+import { themeBootScript } from '@/lib/theme';
 import { Providers } from './providers';
 import './globals.css';
 
@@ -12,12 +13,19 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0f1b2d',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f6f7fb' },
+    { media: '(prefers-color-scheme: dark)', color: '#11121c' },
+  ],
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
+    // The boot script sets `dark` / data-accent before hydration, hence the warning suppression.
+    <html lang="en" className={inter.variable} data-accent="violet" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+      </head>
       <body className="min-h-dvh font-sans">
         <Providers>{children}</Providers>
       </body>

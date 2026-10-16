@@ -49,7 +49,7 @@ export function ActionsMenu({ items, label = 'Actions' }: { items: MenuItem[]; l
       {open && (
         <div
           role="menu"
-          className="absolute right-0 z-20 mt-1 w-40 animate-fade-in overflow-hidden rounded-lg border border-ink-200 bg-white py-1 shadow-lift"
+          className="absolute right-0 z-20 mt-1 w-40 animate-fade-in overflow-hidden rounded-lg border border-ink-200 bg-surface py-1 shadow-lift"
         >
           {items.map((item) => (
             <button
@@ -64,7 +64,7 @@ export function ActionsMenu({ items, label = 'Actions' }: { items: MenuItem[]; l
               }}
               className={cn(
                 'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition',
-                item.danger ? 'text-rose-600 hover:bg-rose-50' : 'text-ink-700 hover:bg-ink-50',
+                item.danger ? 'text-rose-600 hover:bg-rose-500/10' : 'text-ink-700 hover:bg-ink-50',
               )}
             >
               <item.icon className="h-4 w-4" aria-hidden />

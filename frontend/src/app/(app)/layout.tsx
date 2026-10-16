@@ -5,6 +5,7 @@ import { useEffect, type ReactNode } from 'react';
 import { AppShell } from '@/components/layout/app-shell';
 import { FullPageSpinner } from '@/components/ui/spinner';
 import { useAuth } from '@/context/auth-context';
+import { UIProvider } from '@/context/ui-context';
 
 /**
  * Client-side route guard for UX only — the API enforces authentication and
@@ -22,5 +23,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   }, [status, router, pathname]);
 
   if (status !== 'authenticated') return <FullPageSpinner />;
-  return <AppShell>{children}</AppShell>;
+  return (
+    <UIProvider>
+      <AppShell>{children}</AppShell>
+    </UIProvider>
+  );
 }

@@ -49,7 +49,7 @@ export default function LoginPage() {
 
       <form onSubmit={onSubmit} noValidate className="mt-8 space-y-5">
         {formError && (
-          <div role="alert" className="rounded-lg bg-rose-50 px-3 py-2.5 text-sm font-medium text-rose-700">
+          <div role="alert" className="rounded-lg bg-rose-500/10 px-3 py-2.5 text-sm font-medium text-rose-700 dark:text-rose-300">
             {formError}
           </div>
         )}
@@ -66,7 +66,7 @@ export default function LoginPage() {
 
       <p className="mt-6 text-center text-sm text-ink-500">
         Don&apos;t have an account?{' '}
-        <Link href="/register" className="font-semibold text-brand-600 hover:text-brand-700">
+        <Link href="/register" className="font-semibold text-brand-600 hover:text-brand-700 dark:hover:text-brand-300">
           Create account
         </Link>
       </p>
@@ -74,7 +74,7 @@ export default function LoginPage() {
       <button
         type="button"
         onClick={fillDemo}
-        className="mt-6 flex w-full items-start gap-2 rounded-lg border border-dashed border-ink-200 px-3 py-2.5 text-left text-xs text-ink-500 transition hover:border-brand-300 hover:bg-brand-50/50"
+        className="mt-6 flex w-full items-start gap-2 rounded-lg border border-dashed border-ink-200 px-3 py-2.5 text-left text-xs text-ink-500 transition hover:border-brand-500/50 hover:bg-brand-500/5"
       >
         <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-500" aria-hidden />
         <span>

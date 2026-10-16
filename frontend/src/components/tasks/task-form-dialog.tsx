@@ -1,19 +1,19 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import Link from 'next/link';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Select, Textarea } from '@/components/ui/form-controls';
 import { Modal } from '@/components/ui/modal';
+import { useUI } from '@/context/ui-context';
 import { useProjectOptions } from '@/hooks/use-projects';
 import { useCreateTask, useUpdateTask } from '@/hooks/use-tasks';
 import { ApiError } from '@/lib/api/client';
 import { PRIORITIES, PRIORITY_META, STATUSES, STATUS_META } from '@/lib/constants';
 import { todayISO } from '@/lib/dates';
-import { type Task, type TaskStatus } from '@/lib/types';
+import { type Task, type TaskPriority, type TaskStatus } from '@/lib/types';
 import { taskSchema, type TaskFormValues } from '@/lib/validation';
 
 function inDays(n: number) {
@@ -28,6 +28,7 @@ export function TaskFormDialog({
   task,
   defaultProjectId,
   defaultStatus = 'TODO',
+  defaultPriority = 'MEDIUM',
 }: {
   open: boolean;
   onClose: () => void;
@@ -35,8 +36,10 @@ export function TaskFormDialog({
   task?: Task | null;
   defaultProjectId?: string;
   defaultStatus?: TaskStatus;
+  defaultPriority?: TaskPriority;
 }) {
   const isEdit = !!task;
+  const { openTask, openCreateProject } = useUI();
   const projects = useProjectOptions();
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
@@ -67,13 +70,13 @@ export function TaskFormDialog({
             title: '',
             description: '',
             status: defaultStatus,
-            priority: 'MEDIUM',
+            priority: defaultPriority,
             dueDate: inDays(7),
           },
     );
     // Only re-initialise when the dialog opens or the target changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, task?.id, defaultProjectId, defaultStatus, projects.isSuccess]);
+  }, [open, task?.id, defaultProjectId, defaultStatus, defaultPriority, projects.isSuccess]);
 
   const onSubmit = handleSubmit(async (values) => {
     try {
@@ -81,8 +84,10 @@ export function TaskFormDialog({
         await updateTask.mutateAsync({ id: task.id, input: values });
         toast.success('Task updated');
       } else {
-        await createTask.mutateAsync(values);
-        toast.success('Task created');
+        const created = await createTask.mutateAsync(values);
+        toast.success('Task created', {
+          action: { label: 'Open', onClick: () => openTask(created.id) },
+        });
       }
       onClose();
     } catch (err) {
@@ -116,9 +121,16 @@ export function TaskFormDialog({
       {noProjects ? (
         <div className="py-4 text-center text-sm text-ink-600">
           You need a project before you can add tasks.{' '}
-          <Link href="/projects?new=1" className="font-semibold text-brand-600 hover:underline" onClick={onClose}>
+          <button
+            type="button"
+            className="font-semibold text-brand-600 hover:underline"
+            onClick={() => {
+              onClose();
+              openCreateProject();
+            }}
+          >
             Create a project
-          </Link>
+          </button>
         </div>
       ) : (
         <form id="task-form" onSubmit={onSubmit} noValidate className="space-y-4">

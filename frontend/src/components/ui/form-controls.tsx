@@ -11,7 +11,7 @@ import {
 import { cn } from '@/lib/utils';
 
 const control =
-  'block w-full rounded-lg border-0 bg-white px-3 text-sm text-ink-900 shadow-sm ring-1 ring-inset ring-ink-200 placeholder:text-ink-400 transition focus:ring-2 focus:ring-inset focus:ring-brand-500 focus-visible:ring-offset-0 disabled:bg-ink-50 disabled:text-ink-500 aria-[invalid=true]:ring-rose-400 aria-[invalid=true]:focus:ring-rose-500';
+  'block w-full rounded-lg border-0 bg-surface px-3 text-sm text-ink-900 shadow-sm ring-1 ring-inset ring-ink-200 placeholder:text-ink-400 transition focus:ring-2 focus:ring-inset focus:ring-brand-500 focus-visible:ring-offset-0 disabled:bg-ink-50 disabled:text-ink-500 aria-[invalid=true]:ring-rose-400 aria-[invalid=true]:focus:ring-rose-500';
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input(
   { className, ...props },

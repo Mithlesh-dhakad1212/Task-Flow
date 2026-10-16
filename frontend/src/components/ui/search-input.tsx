@@ -25,7 +25,8 @@ export function SearchInput({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-label={label}
-        className="block h-10 w-full rounded-lg border-0 bg-white pl-9 pr-9 text-sm text-ink-900 shadow-sm ring-1 ring-inset ring-ink-200 placeholder:text-ink-400 focus:ring-2 focus:ring-inset focus:ring-brand-500 focus-visible:ring-offset-0 [&::-webkit-search-cancel-button]:hidden"
+        data-search-input
+        className="block h-10 w-full rounded-lg border-0 bg-surface pl-9 pr-9 text-sm text-ink-900 shadow-sm ring-1 ring-inset ring-ink-200 placeholder:text-ink-400 focus:ring-2 focus:ring-inset focus:ring-brand-500 focus-visible:ring-offset-0 [&::-webkit-search-cancel-button]:hidden"
       />
       {value && (
         <button

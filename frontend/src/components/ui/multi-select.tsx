@@ -59,8 +59,8 @@ export function MultiSelect<T extends string>({
         aria-controls={listId}
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          'flex h-10 w-full items-center justify-between gap-2 rounded-lg bg-white px-3 text-sm shadow-sm ring-1 ring-inset transition sm:w-auto sm:min-w-36',
-          value.length ? 'font-medium text-brand-700 ring-brand-300' : 'text-ink-700 ring-ink-200 hover:bg-ink-50',
+          'flex h-10 w-full items-center justify-between gap-2 rounded-lg bg-surface px-3 text-sm shadow-sm ring-1 ring-inset transition sm:w-auto sm:min-w-36',
+          value.length ? 'font-medium text-brand-700 dark:text-brand-300 ring-brand-500/50' : 'text-ink-700 ring-ink-200 hover:bg-ink-50',
         )}
       >
         <span className="truncate">{summary}</span>
@@ -72,7 +72,7 @@ export function MultiSelect<T extends string>({
           role="listbox"
           aria-multiselectable="true"
           aria-label={label}
-          className="absolute left-0 z-20 mt-1 w-48 animate-fade-in rounded-lg border border-ink-200 bg-white py-1 shadow-lift"
+          className="absolute left-0 z-20 mt-1 w-48 animate-fade-in rounded-lg border border-ink-200 bg-surface py-1 shadow-lift"
         >
           {options.map((o) => {
             const selected = value.includes(o.value);

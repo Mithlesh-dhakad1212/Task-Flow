@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 import { PRIORITIES, STATUSES } from '@/lib/constants';
+import { type GroupBy } from '@/components/tasks/board-columns';
 import { type TaskListParams, type TaskPriority, type TaskStatus } from '@/lib/types';
 
 export const SORT_OPTIONS = {
@@ -23,6 +24,8 @@ export interface TaskFilters {
   projectId?: string;
   overdue: boolean;
   view: TaskView;
+  /** Board grouping */
+  group: GroupBy;
   sort: SortKey;
   page: number;
 }
@@ -33,7 +36,7 @@ function parseList<T extends string>(raw: string | null, allowed: readonly T[]):
 }
 
 /**
- * Filters live in the URL (?q=&status=&priority=&project=&overdue=&view=&sort=&page=)
+ * Filters live in the URL (?q=&status=&priority=&project=&overdue=&view=&group=&sort=&page=)
  * so a filtered view can be bookmarked, shared and survives a reload.
  */
 export function useTaskFilters() {
@@ -50,6 +53,7 @@ export function useTaskFilters() {
       projectId: params.get('project') ?? undefined,
       overdue: params.get('overdue') === '1',
       view: params.get('view') === 'list' ? 'list' : 'board',
+      group: (['priority', 'project'] as const).find((g) => g === params.get('group')) ?? 'status',
       sort: sort && sort in SORT_OPTIONS ? (sort as SortKey) : 'due',
       page: Math.max(1, Number(params.get('page')) || 1),
     };
@@ -66,6 +70,7 @@ export function useTaskFilters() {
       if ('projectId' in patch) set('project', patch.projectId);
       if ('overdue' in patch) set('overdue', patch.overdue ? '1' : undefined);
       if ('view' in patch) set('view', patch.view === 'list' ? 'list' : undefined);
+      if ('group' in patch) set('group', patch.group === 'status' ? undefined : patch.group);
       if ('sort' in patch) set('sort', patch.sort === 'due' ? undefined : patch.sort);
       // Any filter change resets pagination unless a page is explicitly requested.
       set('page', patch.page && patch.page > 1 ? String(patch.page) : undefined);

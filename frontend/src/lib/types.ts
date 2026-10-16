@@ -79,6 +79,9 @@ export interface DashboardSummary {
   projects: { id: string; name: string; color: ProjectColor; stats: ProjectStats }[];
   upcoming: Task[];
   overdue: Task[];
+  /** Completions per day, last 14 days, oldest first */
+  activity: { date: string; completed: number }[];
+  openByPriority: Record<TaskPriority, number>;
 }
 
 export interface ProjectInput {
