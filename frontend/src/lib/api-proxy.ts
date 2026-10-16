@@ -16,8 +16,13 @@ export const HOP_BY_HOP = new Set([
   'content-length',
 ]);
 
+/**
+ * The API's base URL (scheme + host). A trailing "/api" is tolerated and
+ * stripped, since the proxy adds the /api prefix itself; otherwise a value
+ * like https://api.example.com/api would produce /api/api/... (404).
+ */
 export function proxyTarget(): string {
-  return (process.env.API_PROXY_TARGET ?? 'http://localhost:4000').replace(/\/$/, '');
+  return (process.env.API_PROXY_TARGET || 'http://localhost:4000').trim().replace(/\/+$/, '').replace(/\/api$/, '');
 }
 
 /** Builds the upstream URL: /api/<path>?<query> on the API. */

@@ -10,6 +10,13 @@ describe('same-origin API proxy', () => {
     expect(proxyTarget()).toBe('http://api.railway.internal:8080');
   });
 
+  it('tolerates a target that already ends in /api (no /api/api/... 404s)', () => {
+    vi.stubEnv('API_PROXY_TARGET', 'https://api.up.railway.app/api');
+    expect(upstreamUrl(['auth', 'login'], '')).toBe('https://api.up.railway.app/api/auth/login');
+    vi.stubEnv('API_PROXY_TARGET', ' https://api.up.railway.app/api/ ');
+    expect(upstreamUrl(['auth', 'login'], '')).toBe('https://api.up.railway.app/api/auth/login');
+  });
+
   it('rebuilds the upstream URL with path segments and query string', () => {
     vi.stubEnv('API_PROXY_TARGET', 'http://api:4000');
     expect(upstreamUrl(['tasks'], '?status=TODO,DONE&search=design')).toBe(
